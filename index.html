@@ -6,24 +6,24 @@
 <title>Surplus — 칼로리 현황판</title>
 <style>
   :root {
-    --bg:#ffffff; --bg2:#f5f5f3; --bg3:#ededea;
-    --text:#1a1a18; --text2:#6b6b67; --text3:#9b9b96;
-    --border:rgba(0,0,0,0.10); --border2:rgba(0,0,0,0.18);
-    --green-bg:#EAF3DE; --green-text:#3B6D11;
-    --yellow-bg:#FAEEDA; --yellow-text:#854F0B;
-    --red-bg:#FCEBEB; --red-text:#A32D2D;
-    --green-bar:#639922; --yellow-bar:#EF9F27; --red-bar:#E24B4A;
-    --radius:10px; --radius-sm:6px;
+    --bg:#ffffff;--bg2:#f5f5f3;--bg3:#ededea;
+    --text:#1a1a18;--text2:#6b6b67;--text3:#9b9b96;
+    --border:rgba(0,0,0,0.10);--border2:rgba(0,0,0,0.18);
+    --green-bg:#EAF3DE;--green-text:#3B6D11;
+    --yellow-bg:#FAEEDA;--yellow-text:#854F0B;
+    --red-bg:#FCEBEB;--red-text:#A32D2D;
+    --green-bar:#639922;--yellow-bar:#EF9F27;--red-bar:#E24B4A;
+    --radius:10px;--radius-sm:6px;
     --shadow:0 1px 3px rgba(0,0,0,0.07);
   }
   @media(prefers-color-scheme:dark){
     :root{
-      --bg:#1c1c1a; --bg2:#252523; --bg3:#2e2e2b;
-      --text:#f0efe8; --text2:#9b9b96; --text3:#6b6b67;
-      --border:rgba(255,255,255,0.09); --border2:rgba(255,255,255,0.16);
-      --green-bg:#173404; --green-text:#C0DD97;
-      --yellow-bg:#412402; --yellow-text:#FAC775;
-      --red-bg:#501313; --red-text:#F7C1C1;
+      --bg:#1c1c1a;--bg2:#252523;--bg3:#2e2e2b;
+      --text:#f0efe8;--text2:#9b9b96;--text3:#6b6b67;
+      --border:rgba(255,255,255,0.09);--border2:rgba(255,255,255,0.16);
+      --green-bg:#173404;--green-text:#C0DD97;
+      --yellow-bg:#412402;--yellow-text:#FAC775;
+      --red-bg:#501313;--red-text:#F7C1C1;
     }
   }
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -42,11 +42,14 @@
   .bmr-grid{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
   .inp-group{display:flex;flex-direction:column;gap:3px}
   .inp-group label{font-size:11px;color:var(--text2);font-weight:500}
-  input[type=number],input[type=text],input[type=date],input[type=time],select{background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-size:13px;padding:6px 10px;outline:none;font-family:inherit}
-  input[type=number],select{width:88px}
+  input[type=number],input[type=text],input[type=date],input[type=time],select{
+    background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius-sm);
+    color:var(--text);font-size:13px;padding:6px 10px;outline:none;font-family:inherit}
+  input[type=number]{width:88px}
+  select{width:88px}
   input[type=text]{width:150px}
-  input[type=date]{width:136px}
-  input[type=time]{width:100px}
+  input[type=date]{width:140px}
+  input[type=time]{width:116px}  /* FIX 2: 시간 입력창 너비 확대 */
   input:focus,select:focus{border-color:var(--text2)}
   .bmr-result{margin-top:.75rem;font-size:13px;color:var(--text2);border-top:0.5px solid var(--border);padding-top:.75rem}
   .bmr-result strong{color:var(--text)}
@@ -66,19 +69,39 @@
   .tab-row{display:flex;gap:6px;margin-bottom:1rem}
   .tab{padding:5px 14px;border-radius:20px;border:0.5px solid var(--border2);font-size:13px;cursor:pointer;background:transparent;color:var(--text2)}
   .tab.active{background:var(--text);color:var(--bg);border-color:var(--text)}
-  /* 식사/운동 입력 탭 */
   .input-tab-row{display:flex;gap:0;margin-bottom:1rem;border:0.5px solid var(--border2);border-radius:var(--radius-sm);overflow:hidden;width:fit-content}
   .input-tab{padding:5px 18px;font-size:13px;cursor:pointer;background:transparent;color:var(--text2);border:none;border-radius:0}
   .input-tab.active{background:var(--text);color:var(--bg);font-weight:500}
+  /* 주간 바 차트 */
   .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px}
-  .bar-day{width:22px;text-align:right;color:var(--text2);flex-shrink:0}
+  .bar-day{width:28px;text-align:right;color:var(--text2);flex-shrink:0;font-size:11px}
   .bar-day.today{font-weight:700;color:var(--text)}
   .bar-wrap{flex:1;background:var(--bg2);border-radius:3px;height:14px;overflow:hidden}
   .bar-fill{height:100%;border-radius:3px;transition:width .35s ease}
-  .bar-val{width:68px;text-align:right;flex-shrink:0;font-size:12px;color:var(--text2);font-variant-numeric:tabular-nums}
-  .legend{display:flex;gap:1.25rem;margin-top:.875rem;font-size:11px;color:var(--text3)}
-  .legend span{display:flex;align-items:center;gap:4px}
-  .legend-dot{width:10px;height:10px;border-radius:2px}
+  .bar-val{width:72px;text-align:right;flex-shrink:0;font-size:12px;color:var(--text2);font-variant-numeric:tabular-nums}
+  /* FIX 3: 달력 뷰 */
+  .cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.875rem}
+  .cal-month{font-size:15px;font-weight:600}
+  .cal-nav{display:flex;gap:4px}
+  .cal-nav button{padding:3px 10px;font-size:12px}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .cal-dow{text-align:center;font-size:11px;color:var(--text3);font-weight:500;padding:2px 0 6px}
+  .cal-dow:first-child{color:var(--red-text)}
+  .cal-dow:last-child{color:#185FA5}
+  .cal-cell{aspect-ratio:1;border-radius:var(--radius-sm);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:default;border:0.5px solid transparent;position:relative;min-height:44px}
+  .cal-cell.has-data{cursor:pointer}
+  .cal-cell.has-data:hover{border-color:var(--border2)}
+  .cal-cell.is-today{border:1.5px solid var(--text2)!important}
+  .cal-cell .cal-num{font-size:12px;font-weight:500;line-height:1}
+  .cal-cell.sun .cal-num{color:var(--red-text)}
+  .cal-cell.sat .cal-num{color:#185FA5}
+  .cal-cell .cal-dot{width:22px;height:6px;border-radius:3px}
+  .cal-cell .cal-tip{font-size:10px;color:inherit;opacity:.8;white-space:nowrap}
+  .cal-empty{aspect-ratio:1;min-height:44px}
+  .cal-legend{display:flex;gap:1.25rem;margin-top:.875rem;font-size:11px;color:var(--text3)}
+  .cal-legend span{display:flex;align-items:center;gap:4px}
+  .legend-dot{width:18px;height:6px;border-radius:3px;flex-shrink:0}
+  /* 테이블 */
   .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
   table{width:100%;border-collapse:collapse;font-size:12px;min-width:700px}
   th{text-align:left;padding:6px 8px;color:var(--text3);font-weight:500;border-bottom:0.5px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
@@ -95,17 +118,13 @@
   .tread-cell{white-space:nowrap;font-variant-numeric:tabular-nums}
   .footer{text-align:center;font-size:11px;color:var(--text3);margin-top:2rem;padding-top:1rem;border-top:0.5px solid var(--border)}
   .hidden{display:none}
-  .type-badge{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:4px;vertical-align:middle}
 </style>
 </head>
 <body>
 <div class="container">
 
   <div class="header">
-    <div>
-      <h1>Surplus</h1>
-      <p>칼로리 잉여·부족 현황 — Notion DB 연동</p>
-    </div>
+    <div><h1>Surplus</h1><p>칼로리 잉여·부족 현황 — Notion DB 연동</p></div>
     <div class="sync-status">
       <span class="dot loading" id="dot"></span>
       <span id="sync-label">동기화 중...</span>
@@ -113,16 +132,14 @@
     </div>
   </div>
 
-  <!-- BMR 설정 -->
+  <!-- BMR -->
   <div class="card">
     <div class="card-title">BMR 설정 (Mifflin-St Jeor)</div>
     <div class="bmr-grid">
       <div class="inp-group"><label>키 (cm)</label><input type="number" id="inp-height" value="180" min="140" max="220"></div>
       <div class="inp-group"><label>체중 (kg)</label><input type="number" id="inp-weight" value="100" min="30" max="200" oninput="calcBMR()"></div>
       <div class="inp-group"><label>나이</label><input type="number" id="inp-age" value="39" min="15" max="90"></div>
-      <div class="inp-group"><label>성별</label>
-        <select id="inp-sex"><option value="m">남성</option><option value="f">여성</option></select>
-      </div>
+      <div class="inp-group"><label>성별</label><select id="inp-sex"><option value="m">남성</option><option value="f">여성</option></select></div>
       <button onclick="calcBMR()">계산</button>
     </div>
     <div class="bmr-result" id="bmr-result">Mifflin-St Jeor 공식 적용 — BMR: <strong>1,935 kcal</strong> (39세 남성, 180cm, 100kg)</div>
@@ -147,7 +164,7 @@
     <div class="metric-card"><div class="metric-label" id="avg-label">주간 평균 잉여</div><div class="metric-val" id="m-avg">–</div><div class="metric-unit">kcal/일</div></div>
   </div>
 
-  <!-- 차트 -->
+  <!-- 차트 (주간 바 / 월간 달력) -->
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">
       <div class="card-title" id="chart-label" style="margin:0">이번 주 일별 잉여</div>
@@ -156,15 +173,40 @@
         <button class="tab" onclick="setView('monthly')">월간</button>
       </div>
     </div>
-    <div id="bars"></div>
-    <div class="legend">
-      <span><span class="legend-dot" style="background:var(--red-bar)"></span>초과 300+ kcal</span>
-      <span><span class="legend-dot" style="background:var(--yellow-bar)"></span>적정 0–300 kcal</span>
-      <span><span class="legend-dot" style="background:var(--green-bar)"></span>부족 (소모 우세)</span>
+
+    <!-- 주간: 바 차트 -->
+    <div id="weekly-view">
+      <div id="bars"></div>
+      <div style="display:flex;gap:1.25rem;margin-top:.875rem;font-size:11px;color:var(--text3)">
+        <span><span class="legend-dot" style="background:var(--red-bar);display:inline-block;width:18px;height:6px;border-radius:3px;margin-right:4px;vertical-align:middle"></span>초과 300+ kcal</span>
+        <span><span class="legend-dot" style="background:var(--yellow-bar);display:inline-block;width:18px;height:6px;border-radius:3px;margin-right:4px;vertical-align:middle"></span>적정 0–300 kcal</span>
+        <span><span class="legend-dot" style="background:var(--green-bar);display:inline-block;width:18px;height:6px;border-radius:3px;margin-right:4px;vertical-align:middle"></span>부족 (소모 우세)</span>
+      </div>
+    </div>
+
+    <!-- 월간: 달력 뷰 -->
+    <div id="monthly-view" class="hidden">
+      <div class="cal-header">
+        <div class="cal-month" id="cal-month-label"></div>
+        <div class="cal-nav">
+          <button onclick="calPrev()">‹ 이전</button>
+          <button onclick="calNext()">다음 ›</button>
+        </div>
+      </div>
+      <div class="cal-grid" id="cal-grid">
+        <div class="cal-dow">일</div><div class="cal-dow">월</div><div class="cal-dow">화</div>
+        <div class="cal-dow">수</div><div class="cal-dow">목</div><div class="cal-dow">금</div><div class="cal-dow">토</div>
+      </div>
+      <div class="cal-legend">
+        <span><span class="legend-dot" style="background:var(--red-bar)"></span>초과 (300+ kcal)</span>
+        <span><span class="legend-dot" style="background:var(--yellow-bar)"></span>적정 (0–300 kcal)</span>
+        <span><span class="legend-dot" style="background:var(--green-bar)"></span>부족 (소모 우세)</span>
+        <span><span class="legend-dot" style="background:var(--bg3)"></span>기록 없음</span>
+      </div>
     </div>
   </div>
 
-  <!-- 입력 카드 -->
+  <!-- 입력 -->
   <div class="card">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">
       <div class="card-title" style="margin:0">기록 추가 → Notion 저장</div>
@@ -173,8 +215,6 @@
         <button class="input-tab" id="tab-exercise" onclick="switchInputTab('exercise')">🏃 운동</button>
       </div>
     </div>
-
-    <!-- 식사 입력 폼 -->
     <div id="form-food" class="add-row" style="margin-bottom:1.25rem">
       <div class="inp-group"><label>날짜</label><input type="date" id="inp-date"></div>
       <div class="inp-group"><label>시간</label><input type="time" id="inp-time"></div>
@@ -183,19 +223,15 @@
       <div class="inp-group"><label>메모</label><input type="text" id="inp-food-memo" placeholder="선택사항" style="width:110px"></div>
       <button id="add-food-btn" onclick="addFoodEntry()">+ 저장</button>
     </div>
-
-    <!-- 운동 입력 폼 -->
     <div id="form-exercise" class="add-row hidden" style="margin-bottom:1.25rem">
       <div class="inp-group"><label>날짜</label><input type="date" id="inp-ex-date"></div>
       <div class="inp-group"><label>시간</label><input type="time" id="inp-ex-time"></div>
       <div class="inp-group"><label>운동 종류</label><input type="text" id="inp-exercise-name" placeholder="트레드밀 6km/h" style="width:150px"></div>
       <div class="inp-group"><label>시간 (분)</label><input type="number" id="inp-ex-min" placeholder="30" min="0" style="width:80px" oninput="calcExCal()"></div>
-      <div class="inp-group"><label>소모 칼로리 (kcal)</label><input type="number" id="inp-ex-cal" placeholder="300" min="0" style="width:100px"></div>
+      <div class="inp-group"><label>소모 (kcal)</label><input type="number" id="inp-ex-cal" placeholder="300" min="0" style="width:90px"></div>
       <div class="inp-group"><label>메모</label><input type="text" id="inp-ex-memo" placeholder="선택사항" style="width:110px"></div>
       <button id="add-ex-btn" onclick="addExerciseEntry()">+ 저장</button>
     </div>
-
-    <!-- 기록 테이블 -->
     <div class="table-wrap">
       <table>
         <thead>
@@ -214,15 +250,14 @@
 
 <script>
 const WORKER_URL = "https://surplus-proxy.jngsyn.workers.dev";
-const MET = 6.0, GREEN = 0, YELLOW = 300;
-let BMR = 1935;
-let entries = [];
-let view = "weekly";
-let inputTab = "food";
+const MET=6.0,GREEN=0,YELLOW=300;
+let BMR=1935,entries=[],view="weekly",inputTab="food";
+let calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
-const DAYS = ["일","월","화","수","목","금","토"];
+const DAYS=["일","월","화","수","목","금","토"];
+const MONTHS=["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"];
 
-function mifflin(h,w,a,s){ return Math.round((10*w)+(6.25*h)-(5*a)+(s==="m"?5:-161)); }
+function mifflin(h,w,a,s){return Math.round((10*w)+(6.25*h)-(5*a)+(s==="m"?5:-161));}
 
 function calcBMR(){
   const h=+document.getElementById("inp-height").value;
@@ -237,65 +272,50 @@ function calcBMR(){
   render();
 }
 
-// 운동 시간 입력 시 칼로리 자동 계산 (트레드밀 6km/h 기준)
 function calcExCal(){
   const min=+document.getElementById("inp-ex-min").value||0;
   const w=+document.getElementById("inp-weight").value||100;
-  const name=document.getElementById("inp-exercise-name").value||"";
-  if(name.includes("트레드밀")||name.includes("6km")||name===""){
-    const cal=Math.round(MET*w*(min/60));
-    if(cal>0) document.getElementById("inp-ex-cal").value=cal;
-  }
+  const cal=Math.round(MET*w*(min/60));
+  if(cal>0) document.getElementById("inp-ex-cal").value=cal;
 }
 
 function signal(s){
-  if(s<=GREEN) return {icon:"🟢",cls:"b-green",badge:"부족",color:"var(--green-text)"};
-  if(s<=YELLOW) return {icon:"🟡",cls:"b-yellow",badge:"적정",color:"#BA7517"};
-  return {icon:"🔴",cls:"b-red",badge:"초과",color:"var(--red-text)"};
+  if(s<=GREEN) return{icon:"🟢",cls:"b-green",badge:"부족",color:"var(--green-text)"};
+  if(s<=YELLOW) return{icon:"🟡",cls:"b-yellow",badge:"적정",color:"#BA7517"};
+  return{icon:"🔴",cls:"b-red",badge:"초과",color:"var(--red-text)"};
 }
 
 function treadmill(surplus,weight){
   if(surplus<=0) return null;
   const min=Math.round((surplus/(MET*weight))*60);
-  return min<60 ? min+"분" : Math.floor(min/60)+"시간 "+(min%60)+"분";
+  return min<60?min+"분":Math.floor(min/60)+"시간 "+(min%60)+"분";
 }
 
-function today(){ return new Date().toISOString().slice(0,10); }
-function nowTime(){ return new Date().toTimeString().slice(0,5); }
-function getWeight(){ return +document.getElementById("inp-weight").value||100; }
+function today(){return new Date().toISOString().slice(0,10);}
+function nowTime(){return new Date().toTimeString().slice(0,5);}
+function getWeight(){return +document.getElementById("inp-weight").value||100;}
 
-// 날짜 표시: 2026-06-24 (화)
+// FIX 1: 요일 표시 — new Date(ds+"T00:00:00") 로컬 기준 파싱
 function formatDate(ds){
   const d=new Date(ds+"T00:00:00");
   return `${ds} (${DAYS[d.getDay()]})`;
 }
 
-function calFor(d){ return entries.filter(e=>e.date===d&&e.type==="food").reduce((s,e)=>s+e.cal,0); }
-function exCalFor(d){ return entries.filter(e=>e.date===d&&e.type==="exercise").reduce((s,e)=>s+e.exerciseCal,0); }
+function calFor(d){return entries.filter(e=>e.date===d&&e.type==="food").reduce((s,e)=>s+e.cal,0);}
+function exCalFor(d){return entries.filter(e=>e.date===d&&e.type==="exercise").reduce((s,e)=>s+e.exerciseCal,0);}
+function surFor(d){return calFor(d)-BMR-exCalFor(d);}
 
-function periodDates(){
+function weekDates(){
   const now=new Date(),dates=[];
-  if(view==="weekly"){
-    const mon=new Date(now); mon.setDate(now.getDate()-((now.getDay()+6)%7));
-    for(let i=0;i<7;i++){const d=new Date(mon);d.setDate(mon.getDate()+i);dates.push(d.toISOString().slice(0,10));}
-  } else {
-    const y=now.getFullYear(),m=now.getMonth(),days=new Date(y,m+1,0).getDate();
-    for(let i=1;i<=days;i++) dates.push(new Date(y,m,i).toISOString().slice(0,10));
-  }
+  const mon=new Date(now);
+  mon.setDate(now.getDate()-((now.getDay()+6)%7));
+  for(let i=0;i<7;i++){const d=new Date(mon);d.setDate(mon.getDate()+i);dates.push(d.toISOString().slice(0,10));}
   return dates;
-}
-
-function dayLabel(ds){
-  const d=new Date(ds+"T00:00:00");
-  return view==="weekly"?DAYS[d.getDay()]:String(d.getDate());
 }
 
 function render(){
   const t=today(),wt=getWeight();
-  const todayCal=calFor(t);
-  const todayExCal=exCalFor(t);
-  const sur=todayCal-BMR-todayExCal;
-  const sig=signal(sur);
+  const todayCal=calFor(t),todayExCal=exCalFor(t),sur=todayCal-BMR-todayExCal,sig=signal(sur);
 
   document.getElementById("sig-icon").textContent=sig.icon;
   document.getElementById("sig-title").textContent=
@@ -311,38 +331,106 @@ function render(){
   document.getElementById("m-tread").textContent=tt||"불필요";
   document.getElementById("m-tread").style.color=tt?"var(--red-text)":"var(--green-text)";
 
-  const dates=periodDates();
-  const surpluses=dates.map(d=>calFor(d)-BMR-exCalFor(d));
-  const active=dates.filter(d=>calFor(d)>0||exCalFor(d)>0);
-  const avg=active.length?Math.round(active.reduce((s,d)=>s+(calFor(d)-BMR-exCalFor(d)),0)/active.length):0;
-
+  // 평균 (이번 주 기준)
+  const wdates=weekDates();
+  const wactive=wdates.filter(d=>calFor(d)>0||exCalFor(d)>0);
+  const avg=wactive.length?Math.round(wactive.reduce((s,d)=>s+surFor(d),0)/wactive.length):0;
   document.getElementById("avg-label").textContent=view==="weekly"?"주간 평균 잉여":"월간 평균 잉여";
   document.getElementById("m-avg").textContent=(avg>0?"+":"")+avg.toLocaleString();
   document.getElementById("m-avg").style.color=signal(avg).color;
-  document.getElementById("chart-label").textContent=
-    view==="weekly"?"이번 주 일별 잉여 칼로리":"이번 달 일별 잉여 칼로리";
+  document.getElementById("chart-label").textContent=view==="weekly"?"이번 주 일별 잉여":"이번 달 달력";
 
+  if(view==="weekly") renderWeekly(t,wt);
+  else renderCalendar();
+
+  renderTable(wt);
+}
+
+function renderWeekly(t,wt){
+  const dates=weekDates();
+  const surpluses=dates.map(d=>surFor(d));
   const maxAbs=Math.max(...surpluses.map(Math.abs),BMR*0.2,1);
   const barsEl=document.getElementById("bars");
   barsEl.innerHTML="";
   dates.forEach((d,i)=>{
-    const s=surpluses[i],has=calFor(d)>0||exCalFor(d)>0,pct=Math.min(Math.abs(s)/maxAbs*100,100);
+    const s=surpluses[i],has=calFor(d)>0||exCalFor(d)>0;
+    const pct=Math.min(Math.abs(s)/maxAbs*100,100);
     const col=s>YELLOW?"var(--red-bar)":s>GREEN?"var(--yellow-bar)":"var(--green-bar)";
     const isT=d===t;
+    // FIX 1: 주간 바 요일 표시 — 로컬 파싱
+    const dow=DAYS[new Date(d+"T00:00:00").getDay()];
     const row=document.createElement("div");
     row.className="bar-row";
-    row.innerHTML=`<span class="bar-day${isT?" today":""}">${dayLabel(d)}</span>
+    row.innerHTML=`<span class="bar-day${isT?" today":""}">${dow}</span>
       <div class="bar-wrap">${has?`<div class="bar-fill" style="width:${pct}%;background:${col}"></div>`:""}</div>
       <span class="bar-val">${has?(s>0?"+":"")+s.toLocaleString():"–"}</span>`;
     barsEl.appendChild(row);
   });
+}
 
+// FIX 3: 달력 뷰
+function renderCalendar(){
+  const t=today();
+  document.getElementById("cal-month-label").textContent=`${calYear}년 ${MONTHS[calMonth]}`;
+  const grid=document.getElementById("cal-grid");
+  // 요일 헤더 7개 유지, 날짜 셀만 교체
+  while(grid.children.length>7) grid.removeChild(grid.lastChild);
+
+  const firstDay=new Date(calYear,calMonth,1).getDay(); // 0=일
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+
+  // 빈 셀
+  for(let i=0;i<firstDay;i++){
+    const el=document.createElement("div");
+    el.className="cal-empty";
+    grid.appendChild(el);
+  }
+
+  for(let day=1;day<=daysInMonth;day++){
+    const ds=`${calYear}-${String(calMonth+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+    const s=surFor(ds);
+    const has=calFor(ds)>0||exCalFor(ds)>0;
+    const isT=ds===t;
+    const dow=new Date(ds+"T00:00:00").getDay();
+
+    const cell=document.createElement("div");
+    cell.className="cal-cell"+(has?" has-data":"")+(isT?" is-today":"")+(dow===0?" sun":dow===6?" sat":"");
+
+    let dotColor="var(--bg3)";
+    let tipText="";
+    if(has){
+      dotColor=s>YELLOW?"var(--red-bar)":s>GREEN?"var(--yellow-bar)":"var(--green-bar)";
+      tipText=(s>0?"+":"")+s.toLocaleString();
+    }
+
+    cell.innerHTML=`<span class="cal-num">${day}</span>
+      <span class="cal-dot" style="background:${dotColor}"></span>
+      ${has?`<span class="cal-tip" style="color:${dotColor};font-size:9px">${tipText}</span>`:""}`;
+
+    if(has){
+      cell.title=`${formatDate(ds)}\n섭취: ${calFor(ds).toLocaleString()} kcal\n운동 소모: ${exCalFor(ds).toLocaleString()} kcal\n잉여: ${tipText} kcal`;
+    }
+    grid.appendChild(cell);
+  }
+}
+
+function calPrev(){
+  calMonth--;
+  if(calMonth<0){calMonth=11;calYear--;}
+  renderCalendar();
+}
+function calNext(){
+  calMonth++;
+  if(calMonth>11){calMonth=0;calYear++;}
+  renderCalendar();
+}
+
+function renderTable(wt){
   const tbody=document.getElementById("tbody");
   tbody.innerHTML="";
   [...entries].sort((a,b)=>{
     const dc=b.date.localeCompare(a.date);
-    if(dc!==0) return dc;
-    return (b.time||"").localeCompare(a.time||"");
+    return dc!==0?dc:(b.time||"").localeCompare(a.time||"");
   }).forEach((e)=>{
     const isFood=e.type==="food";
     const s2=isFood?(e.cal-BMR):-e.exerciseCal;
@@ -355,7 +443,7 @@ function render(){
       <td><span class="badge ${sig2.cls}">${sig2.icon} ${sig2.badge}</span></td>
       <td>${isFood?e.food:e.exercise}</td>
       <td>${isFood?e.cal.toLocaleString():"–"}</td>
-      <td>${e.exerciseCal>0?"-"+e.exerciseCal.toLocaleString():"–"}</td>
+      <td>${e.exerciseCal>0?"−"+e.exerciseCal.toLocaleString():"–"}</td>
       <td style="font-weight:600;color:${sig2.color}">${isFood?(s2>0?"+":"")+s2.toLocaleString():"–"}</td>
       <td class="tread-cell">${tt2?"🏃 "+tt2:isFood?"✅ 불필요":"–"}</td>
       <td><span class="badge ${sig2.cls}">${sig2.icon} ${isFood?sig2.badge:"운동"}</span></td>
@@ -380,19 +468,18 @@ function setSyncStatus(state,msg){
 
 async function loadEntries(){
   setSyncStatus("loading","동기화 중...");
-  try {
+  try{
     const res=await fetch(`${WORKER_URL}/entries`);
     if(!res.ok) throw new Error(`HTTP ${res.status}`);
     const data=await res.json();
     if(data.error) throw new Error(data.error);
-    // 식사/운동 구분 처리
     entries=(data.entries||[]).map(e=>({
       ...e,
-      type: e.food && e.food.trim()?"food": e.exerciseCal>0?"exercise":"food"
+      type:e.food&&e.food.trim()?"food":e.exerciseCal>0?"exercise":"food"
     }));
     setSyncStatus("ok",`동기화 완료 · ${new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"})}`);
     render();
-  } catch(e){
+  }catch(e){
     setSyncStatus("error","연결 실패 — Worker URL 확인 필요");
     console.error(e);
   }
@@ -405,29 +492,20 @@ async function addFoodEntry(){
   const cal=parseInt(document.getElementById("inp-cal").value);
   const memo=document.getElementById("inp-food-memo").value.trim();
   if(!date||!food||isNaN(cal)||cal<0){alert("날짜, 식사 내용, 칼로리를 입력해 주세요.");return;}
-
   const btn=document.getElementById("add-food-btn");
-  btn.disabled=true; btn.textContent="저장 중...";
+  btn.disabled=true;btn.textContent="저장 중...";
   setSyncStatus("loading","Notion에 저장 중...");
-
-  try {
-    const name=`${date}${time?" "+time:""} ${food}`;
-    const res=await fetch(`${WORKER_URL}/entries`,{
-      method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({date,time,food,cal,bmr:BMR,exercise:"",exerciseCal:0,memo})
-    });
+  try{
+    const res=await fetch(`${WORKER_URL}/entries`,{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({date,time,food,cal,bmr:BMR,exercise:"",exerciseCal:0,memo})});
     const data=await res.json();
     if(data.error) throw new Error(data.error);
     document.getElementById("inp-food").value="";
     document.getElementById("inp-cal").value="";
     document.getElementById("inp-food-memo").value="";
     await loadEntries();
-  } catch(e){
-    setSyncStatus("error","저장 실패: "+e.message);
-    alert("저장 실패: "+e.message);
-  } finally {
-    btn.disabled=false; btn.textContent="+ 저장";
-  }
+  }catch(e){setSyncStatus("error","저장 실패: "+e.message);alert("저장 실패: "+e.message);}
+  finally{btn.disabled=false;btn.textContent="+ 저장";}
 }
 
 async function addExerciseEntry(){
@@ -438,16 +516,12 @@ async function addExerciseEntry(){
   const exerciseCal=parseInt(document.getElementById("inp-ex-cal").value)||0;
   const memo=document.getElementById("inp-ex-memo").value.trim();
   if(!date||!exercise){alert("날짜와 운동 종류를 입력해 주세요.");return;}
-
   const btn=document.getElementById("add-ex-btn");
-  btn.disabled=true; btn.textContent="저장 중...";
+  btn.disabled=true;btn.textContent="저장 중...";
   setSyncStatus("loading","Notion에 저장 중...");
-
-  try {
-    const res=await fetch(`${WORKER_URL}/entries`,{
-      method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({date,time,food:"",cal:0,bmr:BMR,exercise:`${exercise}${exMin?" "+exMin+"분":""}`,exerciseCal,memo})
-    });
+  try{
+    const res=await fetch(`${WORKER_URL}/entries`,{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({date,time,food:"",cal:0,bmr:BMR,exercise:`${exercise}${exMin?" "+exMin+"분":""}`,exerciseCal,memo})});
     const data=await res.json();
     if(data.error) throw new Error(data.error);
     document.getElementById("inp-exercise-name").value="";
@@ -455,43 +529,37 @@ async function addExerciseEntry(){
     document.getElementById("inp-ex-cal").value="";
     document.getElementById("inp-ex-memo").value="";
     await loadEntries();
-  } catch(e){
-    setSyncStatus("error","저장 실패: "+e.message);
-    alert("저장 실패: "+e.message);
-  } finally {
-    btn.disabled=false; btn.textContent="+ 저장";
-  }
+  }catch(e){setSyncStatus("error","저장 실패: "+e.message);alert("저장 실패: "+e.message);}
+  finally{btn.disabled=false;btn.textContent="+ 저장";}
 }
 
 async function deleteEntry(id){
   if(!confirm("이 항목을 Notion에서 삭제할까요?")) return;
   setSyncStatus("loading","삭제 중...");
-  try {
-    const res=await fetch(`${WORKER_URL}/entries/delete`,{
-      method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({id})
-    });
+  try{
+    const res=await fetch(`${WORKER_URL}/entries/delete`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id})});
     const data=await res.json();
     if(data.error) throw new Error(data.error);
     await loadEntries();
-  } catch(e){
-    setSyncStatus("error","삭제 실패: "+e.message);
-  }
+  }catch(e){setSyncStatus("error","삭제 실패: "+e.message);}
 }
 
 function setView(v){
   view=v;
   document.querySelectorAll(".tab").forEach((t,i)=>t.classList.toggle("active",i===(v==="weekly"?0:1)));
+  document.getElementById("weekly-view").classList.toggle("hidden",v!=="weekly");
+  document.getElementById("monthly-view").classList.toggle("hidden",v!=="monthly");
+  // 월간 전환 시 현재 달로 초기화
+  if(v==="monthly"){calYear=new Date().getFullYear();calMonth=new Date().getMonth();}
   render();
 }
 
-// 초기화
 document.getElementById("inp-date").value=today();
 document.getElementById("inp-time").value=nowTime();
 document.getElementById("inp-ex-date").value=today();
 document.getElementById("inp-ex-time").value=nowTime();
 loadEntries();
-setInterval(loadEntries, 5*60*1000);
+setInterval(loadEntries,5*60*1000);
 </script>
 </body>
 </html>
