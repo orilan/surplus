@@ -237,7 +237,7 @@
         <thead>
           <tr>
             <th>날짜</th><th>시간</th><th>구분</th><th>내용</th>
-            <th>섭취</th><th>운동 소모</th><th>잉여</th><th>트레드밀 6km/h</th><th>상태</th><th></th>
+            <th>섭취 (kcal)</th><th>운동 소모 (kcal)</th><th>메모</th><th></th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
@@ -433,20 +433,18 @@ function renderTable(wt){
     return dc!==0?dc:(b.time||"").localeCompare(a.time||"");
   }).forEach((e)=>{
     const isFood=e.type==="food";
-    const s2=isFood?(e.cal-BMR):-e.exerciseCal;
-    const sig2=isFood?signal(s2):{icon:"🔵",cls:"b-blue",badge:"운동",color:"#185FA5"};
-    const tt2=isFood?treadmill(s2,wt):null;
+    const typeBadge=isFood
+      ?'<span class="badge b-yellow">🍽 식사</span>'
+      :'<span class="badge b-blue">🏃 운동</span>';
     const tr=document.createElement("tr");
     tr.innerHTML=`
       <td style="white-space:nowrap">${formatDate(e.date)}</td>
       <td style="color:var(--text2)">${e.time||"–"}</td>
-      <td><span class="badge ${sig2.cls}">${sig2.icon} ${sig2.badge}</span></td>
+      <td>${typeBadge}</td>
       <td>${isFood?e.food:e.exercise}</td>
-      <td>${isFood?e.cal.toLocaleString():"–"}</td>
+      <td>${isFood&&e.cal>0?e.cal.toLocaleString():"–"}</td>
       <td>${e.exerciseCal>0?"−"+e.exerciseCal.toLocaleString():"–"}</td>
-      <td style="font-weight:600;color:${sig2.color}">${isFood?(s2>0?"+":"")+s2.toLocaleString():"–"}</td>
-      <td class="tread-cell">${tt2?"🏃 "+tt2:isFood?"✅ 불필요":"–"}</td>
-      <td><span class="badge ${sig2.cls}">${sig2.icon} ${isFood?sig2.badge:"운동"}</span></td>
+      <td style="color:var(--text2);font-size:12px">${e.memo||"–"}</td>
       <td><button style="font-size:11px;padding:2px 8px;color:var(--text3)" onclick="deleteEntry('${e.id}')">삭제</button></td>`;
     tbody.appendChild(tr);
   });
