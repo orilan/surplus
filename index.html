@@ -28,7 +28,7 @@
   }
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   body{font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;background:var(--bg3);color:var(--text);min-height:100vh;padding:2rem 1rem;font-size:14px;line-height:1.6}
-  .container{max-width:860px;margin:0 auto}
+  .container{max-width:900px;margin:0 auto}
   .header{margin-bottom:1.75rem;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:.5rem}
   .header h1{font-size:26px;font-weight:600;letter-spacing:-.5px}
   .header p{font-size:13px;color:var(--text2)}
@@ -42,10 +42,11 @@
   .bmr-grid{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
   .inp-group{display:flex;flex-direction:column;gap:3px}
   .inp-group label{font-size:11px;color:var(--text2);font-weight:500}
-  input[type=number],input[type=text],input[type=date],select{background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-size:13px;padding:6px 10px;outline:none;font-family:inherit}
+  input[type=number],input[type=text],input[type=date],input[type=time],select{background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-size:13px;padding:6px 10px;outline:none;font-family:inherit}
   input[type=number],select{width:88px}
   input[type=text]{width:150px}
   input[type=date]{width:136px}
+  input[type=time]{width:100px}
   input:focus,select:focus{border-color:var(--text2)}
   .bmr-result{margin-top:.75rem;font-size:13px;color:var(--text2);border-top:0.5px solid var(--border);padding-top:.75rem}
   .bmr-result strong{color:var(--text)}
@@ -65,6 +66,10 @@
   .tab-row{display:flex;gap:6px;margin-bottom:1rem}
   .tab{padding:5px 14px;border-radius:20px;border:0.5px solid var(--border2);font-size:13px;cursor:pointer;background:transparent;color:var(--text2)}
   .tab.active{background:var(--text);color:var(--bg);border-color:var(--text)}
+  /* 식사/운동 입력 탭 */
+  .input-tab-row{display:flex;gap:0;margin-bottom:1rem;border:0.5px solid var(--border2);border-radius:var(--radius-sm);overflow:hidden;width:fit-content}
+  .input-tab{padding:5px 18px;font-size:13px;cursor:pointer;background:transparent;color:var(--text2);border:none;border-radius:0}
+  .input-tab.active{background:var(--text);color:var(--bg);font-weight:500}
   .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px}
   .bar-day{width:22px;text-align:right;color:var(--text2);flex-shrink:0}
   .bar-day.today{font-weight:700;color:var(--text)}
@@ -75,7 +80,7 @@
   .legend span{display:flex;align-items:center;gap:4px}
   .legend-dot{width:10px;height:10px;border-radius:2px}
   .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-  table{width:100%;border-collapse:collapse;font-size:12px;min-width:640px}
+  table{width:100%;border-collapse:collapse;font-size:12px;min-width:700px}
   th{text-align:left;padding:6px 8px;color:var(--text3);font-weight:500;border-bottom:0.5px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
   td{padding:7px 8px;border-bottom:0.5px solid var(--border);vertical-align:middle}
   tr:last-child td{border-bottom:none}
@@ -84,10 +89,13 @@
   .b-green{background:var(--green-bg);color:var(--green-text)}
   .b-yellow{background:var(--yellow-bg);color:var(--yellow-text)}
   .b-red{background:var(--red-bg);color:var(--red-text)}
+  .b-blue{background:#E6F1FB;color:#185FA5}
+  @media(prefers-color-scheme:dark){.b-blue{background:#042C53;color:#85B7EB}}
   .add-row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
   .tread-cell{white-space:nowrap;font-variant-numeric:tabular-nums}
   .footer{text-align:center;font-size:11px;color:var(--text3);margin-top:2rem;padding-top:1rem;border-top:0.5px solid var(--border)}
-  .skeleton{background:var(--bg2);border-radius:4px;animation:pulse 1.2s infinite}
+  .hidden{display:none}
+  .type-badge{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:4px;vertical-align:middle}
 </style>
 </head>
 <body>
@@ -132,6 +140,7 @@
   <!-- 메트릭 -->
   <div class="metric-grid">
     <div class="metric-card"><div class="metric-label">오늘 섭취</div><div class="metric-val" id="m-intake">–</div><div class="metric-unit">kcal</div></div>
+    <div class="metric-card"><div class="metric-label">오늘 운동 소모</div><div class="metric-val" id="m-exercise">–</div><div class="metric-unit">kcal</div></div>
     <div class="metric-card"><div class="metric-label">BMR</div><div class="metric-val" id="m-bmr">1,935</div><div class="metric-unit">kcal</div></div>
     <div class="metric-card"><div class="metric-label">잉여 / 부족</div><div class="metric-val" id="m-surplus">–</div><div class="metric-unit">kcal</div></div>
     <div class="metric-card"><div class="metric-label">트레드밀 6km/h</div><div class="metric-val" id="m-tread">–</div><div class="metric-unit">소모 필요 시간</div></div>
@@ -155,23 +164,44 @@
     </div>
   </div>
 
-  <!-- 식사 추가 -->
+  <!-- 입력 카드 -->
   <div class="card">
-    <div class="card-title">식사 추가 → Notion 저장</div>
-    <div class="add-row" style="margin-bottom:1.25rem">
-      <div class="inp-group"><label>날짜</label><input type="date" id="inp-date"></div>
-      <div class="inp-group"><label>식사 내용</label><input type="text" id="inp-food" placeholder="삼각김밥 2개"></div>
-      <div class="inp-group"><label>칼로리 (kcal)</label><input type="number" id="inp-cal" placeholder="364" min="0" style="width:100px"></div>
-      <div class="inp-group"><label>운동 기록</label><input type="text" id="inp-exercise" placeholder="트레드밀 30분" style="width:130px"></div>
-      <div class="inp-group"><label>운동 소모 (kcal)</label><input type="number" id="inp-ex-cal" placeholder="0" min="0" style="width:100px"></div>
-      <button id="add-btn" onclick="addEntry()">+ Notion에 저장</button>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">
+      <div class="card-title" style="margin:0">기록 추가 → Notion 저장</div>
+      <div class="input-tab-row">
+        <button class="input-tab active" id="tab-food" onclick="switchInputTab('food')">🍽 식사</button>
+        <button class="input-tab" id="tab-exercise" onclick="switchInputTab('exercise')">🏃 운동</button>
+      </div>
     </div>
+
+    <!-- 식사 입력 폼 -->
+    <div id="form-food" class="add-row" style="margin-bottom:1.25rem">
+      <div class="inp-group"><label>날짜</label><input type="date" id="inp-date"></div>
+      <div class="inp-group"><label>시간</label><input type="time" id="inp-time"></div>
+      <div class="inp-group"><label>식사 내용</label><input type="text" id="inp-food" placeholder="비빔밥"></div>
+      <div class="inp-group"><label>칼로리 (kcal)</label><input type="number" id="inp-cal" placeholder="550" min="0" style="width:100px"></div>
+      <div class="inp-group"><label>메모</label><input type="text" id="inp-food-memo" placeholder="선택사항" style="width:110px"></div>
+      <button id="add-food-btn" onclick="addFoodEntry()">+ 저장</button>
+    </div>
+
+    <!-- 운동 입력 폼 -->
+    <div id="form-exercise" class="add-row hidden" style="margin-bottom:1.25rem">
+      <div class="inp-group"><label>날짜</label><input type="date" id="inp-ex-date"></div>
+      <div class="inp-group"><label>시간</label><input type="time" id="inp-ex-time"></div>
+      <div class="inp-group"><label>운동 종류</label><input type="text" id="inp-exercise-name" placeholder="트레드밀 6km/h" style="width:150px"></div>
+      <div class="inp-group"><label>시간 (분)</label><input type="number" id="inp-ex-min" placeholder="30" min="0" style="width:80px" oninput="calcExCal()"></div>
+      <div class="inp-group"><label>소모 칼로리 (kcal)</label><input type="number" id="inp-ex-cal" placeholder="300" min="0" style="width:100px"></div>
+      <div class="inp-group"><label>메모</label><input type="text" id="inp-ex-memo" placeholder="선택사항" style="width:110px"></div>
+      <button id="add-ex-btn" onclick="addExerciseEntry()">+ 저장</button>
+    </div>
+
+    <!-- 기록 테이블 -->
     <div class="table-wrap">
       <table>
         <thead>
           <tr>
-            <th>날짜</th><th>식사 내용</th><th>섭취</th><th>BMR</th>
-            <th>잉여</th><th>트레드밀 6km/h</th><th>상태</th><th></th>
+            <th>날짜</th><th>시간</th><th>구분</th><th>내용</th>
+            <th>섭취</th><th>운동 소모</th><th>잉여</th><th>트레드밀 6km/h</th><th>상태</th><th></th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
@@ -183,15 +213,15 @@
 </div>
 
 <script>
-// ★ Cloudflare Worker 배포 후 아래 URL을 실제 Worker URL로 교체하세요
 const WORKER_URL = "https://surplus-proxy.jngsyn.workers.dev";
-
 const MET = 6.0, GREEN = 0, YELLOW = 300;
 let BMR = 1935;
-let entries = [];  // Notion에서 불러온 데이터
+let entries = [];
 let view = "weekly";
+let inputTab = "food";
 
-// ── BMR 계산 ──────────────────────────────────────────────
+const DAYS = ["일","월","화","수","목","금","토"];
+
 function mifflin(h,w,a,s){ return Math.round((10*w)+(6.25*h)-(5*a)+(s==="m"?5:-161)); }
 
 function calcBMR(){
@@ -207,24 +237,41 @@ function calcBMR(){
   render();
 }
 
-// ── 신호등 ────────────────────────────────────────────────
+// 운동 시간 입력 시 칼로리 자동 계산 (트레드밀 6km/h 기준)
+function calcExCal(){
+  const min=+document.getElementById("inp-ex-min").value||0;
+  const w=+document.getElementById("inp-weight").value||100;
+  const name=document.getElementById("inp-exercise-name").value||"";
+  if(name.includes("트레드밀")||name.includes("6km")||name===""){
+    const cal=Math.round(MET*w*(min/60));
+    if(cal>0) document.getElementById("inp-ex-cal").value=cal;
+  }
+}
+
 function signal(s){
   if(s<=GREEN) return {icon:"🟢",cls:"b-green",badge:"부족",color:"var(--green-text)"};
   if(s<=YELLOW) return {icon:"🟡",cls:"b-yellow",badge:"적정",color:"#BA7517"};
   return {icon:"🔴",cls:"b-red",badge:"초과",color:"var(--red-text)"};
 }
 
-// ── 트레드밀 시간 ─────────────────────────────────────────
 function treadmill(surplus,weight){
   if(surplus<=0) return null;
   const min=Math.round((surplus/(MET*weight))*60);
   return min<60 ? min+"분" : Math.floor(min/60)+"시간 "+(min%60)+"분";
 }
 
-// ── 유틸 ──────────────────────────────────────────────────
 function today(){ return new Date().toISOString().slice(0,10); }
+function nowTime(){ return new Date().toTimeString().slice(0,5); }
 function getWeight(){ return +document.getElementById("inp-weight").value||100; }
-function calFor(d){ return entries.filter(e=>e.date===d).reduce((s,e)=>s+e.cal,0); }
+
+// 날짜 표시: 2026-06-24 (화)
+function formatDate(ds){
+  const d=new Date(ds+"T00:00:00");
+  return `${ds} (${DAYS[d.getDay()]})`;
+}
+
+function calFor(d){ return entries.filter(e=>e.date===d&&e.type==="food").reduce((s,e)=>s+e.cal,0); }
+function exCalFor(d){ return entries.filter(e=>e.date===d&&e.type==="exercise").reduce((s,e)=>s+e.exerciseCal,0); }
 
 function periodDates(){
   const now=new Date(),dates=[];
@@ -239,22 +286,24 @@ function periodDates(){
 }
 
 function dayLabel(ds){
-  const days=["일","월","화","수","목","금","토"];
   const d=new Date(ds+"T00:00:00");
-  return view==="weekly"?days[d.getDay()]:String(d.getDate());
+  return view==="weekly"?DAYS[d.getDay()]:String(d.getDate());
 }
 
-// ── 렌더링 ────────────────────────────────────────────────
 function render(){
   const t=today(),wt=getWeight();
-  const todayCal=calFor(t),sur=todayCal-BMR,sig=signal(sur);
+  const todayCal=calFor(t);
+  const todayExCal=exCalFor(t);
+  const sur=todayCal-BMR-todayExCal;
+  const sig=signal(sur);
 
   document.getElementById("sig-icon").textContent=sig.icon;
   document.getElementById("sig-title").textContent=
     sur<=GREEN?"소모 우세 — 목표 달성":sur<=YELLOW?"적정 범위 내 잉여":"칼로리 초과 주의";
   document.getElementById("sig-sub").textContent=
-    `섭취 ${todayCal.toLocaleString()} kcal — BMR ${BMR.toLocaleString()} kcal = ${sur>0?"+":""}${sur.toLocaleString()} kcal`;
+    `섭취 ${todayCal.toLocaleString()} kcal − BMR ${BMR.toLocaleString()} kcal − 운동 ${todayExCal.toLocaleString()} kcal = ${sur>0?"+":""}${sur.toLocaleString()} kcal`;
   document.getElementById("m-intake").textContent=todayCal.toLocaleString();
+  document.getElementById("m-exercise").textContent=todayExCal.toLocaleString();
   document.getElementById("m-surplus").textContent=(sur>0?"+":"")+sur.toLocaleString();
   document.getElementById("m-surplus").style.color=sig.color;
 
@@ -263,9 +312,9 @@ function render(){
   document.getElementById("m-tread").style.color=tt?"var(--red-text)":"var(--green-text)";
 
   const dates=periodDates();
-  const surpluses=dates.map(d=>calFor(d)-BMR);
-  const active=dates.filter(d=>calFor(d)>0);
-  const avg=active.length?Math.round(active.reduce((s,d)=>s+(calFor(d)-BMR),0)/active.length):0;
+  const surpluses=dates.map(d=>calFor(d)-BMR-exCalFor(d));
+  const active=dates.filter(d=>calFor(d)>0||exCalFor(d)>0);
+  const avg=active.length?Math.round(active.reduce((s,d)=>s+(calFor(d)-BMR-exCalFor(d)),0)/active.length):0;
 
   document.getElementById("avg-label").textContent=view==="weekly"?"주간 평균 잉여":"월간 평균 잉여";
   document.getElementById("m-avg").textContent=(avg>0?"+":"")+avg.toLocaleString();
@@ -277,7 +326,7 @@ function render(){
   const barsEl=document.getElementById("bars");
   barsEl.innerHTML="";
   dates.forEach((d,i)=>{
-    const s=surpluses[i],has=calFor(d)>0,pct=Math.min(Math.abs(s)/maxAbs*100,100);
+    const s=surpluses[i],has=calFor(d)>0||exCalFor(d)>0,pct=Math.min(Math.abs(s)/maxAbs*100,100);
     const col=s>YELLOW?"var(--red-bar)":s>GREEN?"var(--yellow-bar)":"var(--green-bar)";
     const isT=d===t;
     const row=document.createElement("div");
@@ -290,23 +339,40 @@ function render(){
 
   const tbody=document.getElementById("tbody");
   tbody.innerHTML="";
-  [...entries].sort((a,b)=>b.date.localeCompare(a.date)).forEach((e)=>{
-    const s2=e.cal-BMR,sig2=signal(s2),tt2=treadmill(s2,wt);
+  [...entries].sort((a,b)=>{
+    const dc=b.date.localeCompare(a.date);
+    if(dc!==0) return dc;
+    return (b.time||"").localeCompare(a.time||"");
+  }).forEach((e)=>{
+    const isFood=e.type==="food";
+    const s2=isFood?(e.cal-BMR):-e.exerciseCal;
+    const sig2=isFood?signal(s2):{icon:"🔵",cls:"b-blue",badge:"운동",color:"#185FA5"};
+    const tt2=isFood?treadmill(s2,wt):null;
     const tr=document.createElement("tr");
-    tr.innerHTML=`<td>${e.date}</td>
-      <td>${e.food}</td>
-      <td>${e.cal.toLocaleString()}</td>
-      <td>${BMR.toLocaleString()}</td>
-      <td style="font-weight:600;color:${sig2.color}">${s2>0?"+":""}${s2.toLocaleString()}</td>
-      <td class="tread-cell">${tt2?"🏃 "+tt2:"✅ 불필요"}</td>
+    tr.innerHTML=`
+      <td style="white-space:nowrap">${formatDate(e.date)}</td>
+      <td style="color:var(--text2)">${e.time||"–"}</td>
       <td><span class="badge ${sig2.cls}">${sig2.icon} ${sig2.badge}</span></td>
+      <td>${isFood?e.food:e.exercise}</td>
+      <td>${isFood?e.cal.toLocaleString():"–"}</td>
+      <td>${e.exerciseCal>0?"-"+e.exerciseCal.toLocaleString():"–"}</td>
+      <td style="font-weight:600;color:${sig2.color}">${isFood?(s2>0?"+":"")+s2.toLocaleString():"–"}</td>
+      <td class="tread-cell">${tt2?"🏃 "+tt2:isFood?"✅ 불필요":"–"}</td>
+      <td><span class="badge ${sig2.cls}">${sig2.icon} ${isFood?sig2.badge:"운동"}</span></td>
       <td><button style="font-size:11px;padding:2px 8px;color:var(--text3)" onclick="deleteEntry('${e.id}')">삭제</button></td>`;
     tbody.appendChild(tr);
   });
 }
 
-// ── Notion API 연동 ───────────────────────────────────────
-function setSyncStatus(state, msg){
+function switchInputTab(tab){
+  inputTab=tab;
+  document.getElementById("tab-food").classList.toggle("active",tab==="food");
+  document.getElementById("tab-exercise").classList.toggle("active",tab==="exercise");
+  document.getElementById("form-food").classList.toggle("hidden",tab!=="food");
+  document.getElementById("form-exercise").classList.toggle("hidden",tab!=="exercise");
+}
+
+function setSyncStatus(state,msg){
   const dot=document.getElementById("dot");
   dot.className="dot"+(state==="loading"?" loading":state==="error"?" error":"");
   document.getElementById("sync-label").textContent=msg;
@@ -319,7 +385,11 @@ async function loadEntries(){
     if(!res.ok) throw new Error(`HTTP ${res.status}`);
     const data=await res.json();
     if(data.error) throw new Error(data.error);
-    entries=data.entries||[];
+    // 식사/운동 구분 처리
+    entries=(data.entries||[]).map(e=>({
+      ...e,
+      type: e.food && e.food.trim()?"food": e.exerciseCal>0?"exercise":"food"
+    }));
     setSyncStatus("ok",`동기화 완료 · ${new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"})}`);
     render();
   } catch(e){
@@ -328,36 +398,68 @@ async function loadEntries(){
   }
 }
 
-async function addEntry(){
+async function addFoodEntry(){
   const date=document.getElementById("inp-date").value;
+  const time=document.getElementById("inp-time").value;
   const food=document.getElementById("inp-food").value.trim();
   const cal=parseInt(document.getElementById("inp-cal").value);
-  const exercise=document.getElementById("inp-exercise").value.trim();
-  const exerciseCal=parseInt(document.getElementById("inp-ex-cal").value)||0;
-  if(!date||!food||isNaN(cal)||cal<0){alert("날짜, 식사 내용, 칼로리를 모두 입력해 주세요.");return;}
+  const memo=document.getElementById("inp-food-memo").value.trim();
+  if(!date||!food||isNaN(cal)||cal<0){alert("날짜, 식사 내용, 칼로리를 입력해 주세요.");return;}
 
-  const btn=document.getElementById("add-btn");
+  const btn=document.getElementById("add-food-btn");
   btn.disabled=true; btn.textContent="저장 중...";
   setSyncStatus("loading","Notion에 저장 중...");
 
   try {
+    const name=`${date}${time?" "+time:""} ${food}`;
     const res=await fetch(`${WORKER_URL}/entries`,{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({date,food,cal,bmr:BMR,exercise,exerciseCal,memo:""})
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({date,time,food,cal,bmr:BMR,exercise:"",exerciseCal:0,memo})
     });
     const data=await res.json();
     if(data.error) throw new Error(data.error);
     document.getElementById("inp-food").value="";
     document.getElementById("inp-cal").value="";
-    document.getElementById("inp-exercise").value="";
-    document.getElementById("inp-ex-cal").value="";
+    document.getElementById("inp-food-memo").value="";
     await loadEntries();
   } catch(e){
     setSyncStatus("error","저장 실패: "+e.message);
     alert("저장 실패: "+e.message);
   } finally {
-    btn.disabled=false; btn.textContent="+ Notion에 저장";
+    btn.disabled=false; btn.textContent="+ 저장";
+  }
+}
+
+async function addExerciseEntry(){
+  const date=document.getElementById("inp-ex-date").value;
+  const time=document.getElementById("inp-ex-time").value;
+  const exercise=document.getElementById("inp-exercise-name").value.trim();
+  const exMin=parseInt(document.getElementById("inp-ex-min").value)||0;
+  const exerciseCal=parseInt(document.getElementById("inp-ex-cal").value)||0;
+  const memo=document.getElementById("inp-ex-memo").value.trim();
+  if(!date||!exercise){alert("날짜와 운동 종류를 입력해 주세요.");return;}
+
+  const btn=document.getElementById("add-ex-btn");
+  btn.disabled=true; btn.textContent="저장 중...";
+  setSyncStatus("loading","Notion에 저장 중...");
+
+  try {
+    const res=await fetch(`${WORKER_URL}/entries`,{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({date,time,food:"",cal:0,bmr:BMR,exercise:`${exercise}${exMin?" "+exMin+"분":""}`,exerciseCal,memo})
+    });
+    const data=await res.json();
+    if(data.error) throw new Error(data.error);
+    document.getElementById("inp-exercise-name").value="";
+    document.getElementById("inp-ex-min").value="";
+    document.getElementById("inp-ex-cal").value="";
+    document.getElementById("inp-ex-memo").value="";
+    await loadEntries();
+  } catch(e){
+    setSyncStatus("error","저장 실패: "+e.message);
+    alert("저장 실패: "+e.message);
+  } finally {
+    btn.disabled=false; btn.textContent="+ 저장";
   }
 }
 
@@ -366,8 +468,7 @@ async function deleteEntry(id){
   setSyncStatus("loading","삭제 중...");
   try {
     const res=await fetch(`${WORKER_URL}/entries/delete`,{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
+      method:"POST",headers:{"Content-Type":"application/json"},
       body:JSON.stringify({id})
     });
     const data=await res.json();
@@ -384,12 +485,13 @@ function setView(v){
   render();
 }
 
-// ── 초기화 ────────────────────────────────────────────────
+// 초기화
 document.getElementById("inp-date").value=today();
+document.getElementById("inp-time").value=nowTime();
+document.getElementById("inp-ex-date").value=today();
+document.getElementById("inp-ex-time").value=nowTime();
 loadEntries();
-
-// 5분마다 자동 새로고침
-setInterval(loadEntries, 5 * 60 * 1000);
+setInterval(loadEntries, 5*60*1000);
 </script>
 </body>
 </html>
