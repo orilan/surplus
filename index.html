@@ -136,13 +136,13 @@
   <div class="card">
     <div class="card-title">BMR 설정 (Mifflin-St Jeor)</div>
     <div class="bmr-grid">
-      <div class="inp-group"><label>키 (cm)</label><input type="number" id="inp-height" value="180" min="140" max="220"></div>
-      <div class="inp-group"><label>체중 (kg)</label><input type="number" id="inp-weight" value="100" min="30" max="200" oninput="calcBMR()"></div>
+      <div class="inp-group"><label>키 (cm)</label><input type="number" id="inp-height" value="181" min="140" max="220"></div>
+      <div class="inp-group"><label>체중 (kg)</label><input type="number" id="inp-weight" value="95" min="30" max="200" oninput="calcBMR()"></div>
       <div class="inp-group"><label>나이</label><input type="number" id="inp-age" value="39" min="15" max="90"></div>
       <div class="inp-group"><label>성별</label><select id="inp-sex"><option value="m">남성</option><option value="f">여성</option></select></div>
       <button onclick="calcBMR()">계산</button>
     </div>
-    <div class="bmr-result" id="bmr-result">Mifflin-St Jeor 공식 적용 — BMR: <strong>1,935 kcal</strong> (39세 남성, 180cm, 100kg)</div>
+    <div class="bmr-result" id="bmr-result">Mifflin-St Jeor 공식 적용 — BMR: <strong>1,891 kcal</strong> (39세 남성, 181cm, 95kg)</div>
   </div>
 
   <!-- 신호등 -->
@@ -251,7 +251,7 @@
 <script>
 const WORKER_URL = "https://surplus-proxy.jngsyn.workers.dev";
 const MET=6.0,GREEN=0,YELLOW=300;
-let BMR=1935,entries=[],view="weekly",inputTab="food";
+let BMR=1891,entries=[],view="weekly",inputTab="food";
 let calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
 const DAYS=["일","월","화","수","목","금","토"];
