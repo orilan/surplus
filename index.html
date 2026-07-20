@@ -49,7 +49,7 @@
   select{width:88px}
   input[type=text]{width:150px}
   input[type=date]{width:140px}
-  input[type=time]{width:116px}  /* FIX 2: 시간 입력창 너비 확대 */
+  input[type=time]{width:116px}
   input:focus,select:focus{border-color:var(--text2)}
   .bmr-result{margin-top:.75rem;font-size:13px;color:var(--text2);border-top:0.5px solid var(--border);padding-top:.75rem}
   .bmr-result strong{color:var(--text)}
@@ -79,7 +79,7 @@
   .bar-wrap{flex:1;background:var(--bg2);border-radius:3px;height:14px;overflow:hidden}
   .bar-fill{height:100%;border-radius:3px;transition:width .35s ease}
   .bar-val{width:72px;text-align:right;flex-shrink:0;font-size:12px;color:var(--text2);font-variant-numeric:tabular-nums}
-  /* FIX 3: 달력 뷰 */
+  /* 달력 뷰 */
   .cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.875rem}
   .cal-month{font-size:15px;font-weight:600}
   .cal-nav{display:flex;gap:4px}
@@ -118,6 +118,26 @@
   .tread-cell{white-space:nowrap;font-variant-numeric:tabular-nums}
   .footer{text-align:center;font-size:11px;color:var(--text3);margin-top:2rem;padding-top:1rem;border-top:0.5px solid var(--border)}
   .hidden{display:none}
+
+  /* ── 주간 운동 현황 ── */
+  .wt-grid{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.875rem}
+  .wt-day{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:48px;padding:10px 6px;border-radius:var(--radius-sm);background:var(--bg2);border:0.5px solid var(--border);font-size:11px;transition:background .2s}
+  .wt-day.done{background:var(--green-bg);border-color:rgba(59,109,17,.3)}
+  .wt-day.today{border:1.5px solid var(--text2)!important}
+  .wt-day .wt-icon{font-size:20px;line-height:1}
+  .wt-day .wt-label{font-weight:600;color:var(--text3)}
+  .wt-day.done .wt-label{color:var(--green-text)}
+  .wt-day .wt-type{font-size:9px;color:var(--text3);text-align:center;line-height:1.2;max-width:46px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .wt-day.done .wt-type{color:var(--green-text);opacity:.8}
+  .wt-stats{font-size:13px;color:var(--text2);margin-bottom:1rem;display:flex;gap:1.5rem;flex-wrap:wrap;align-items:center}
+  .wt-stats strong{color:var(--text)}
+  .wt-log-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .wt-log-label{font-size:12px;color:var(--text3);margin-right:2px}
+  .wt-type-btn{background:var(--bg2);border:0.5px solid var(--border2);border-radius:20px;color:var(--text);font-size:12px;padding:5px 14px;cursor:pointer;font-family:inherit;transition:background .15s,color .15s}
+  .wt-type-btn:hover{background:var(--green-bg);color:var(--green-text);border-color:rgba(59,109,17,.4)}
+  .wt-type-btn:disabled{opacity:.45;cursor:not-allowed}
+  .wt-done-badge{display:inline-flex;align-items:center;gap:6px;background:var(--green-bg);color:var(--green-text);border-radius:20px;padding:5px 14px;font-size:13px;font-weight:600;border:0.5px solid rgba(59,109,17,.3)}
+  .wt-undo-btn{font-size:11px;padding:3px 10px;color:var(--text3);margin-left:4px}
 </style>
 </head>
 <body>
@@ -164,7 +184,15 @@
     <div class="metric-card"><div class="metric-label" id="avg-label">주간 평균 잉여</div><div class="metric-val" id="m-avg">–</div><div class="metric-unit">kcal/일</div></div>
   </div>
 
-  <!-- 차트 (주간 바 / 월간 달력) -->
+  <!-- 주간 운동 현황 -->
+  <div class="card">
+    <div class="card-title">🏋️ 주간 운동 현황</div>
+    <div class="wt-grid" id="wt-grid"></div>
+    <div class="wt-stats" id="wt-stats"></div>
+    <div class="wt-log-row" id="wt-log-row"></div>
+  </div>
+
+  <!-- 차트 -->
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">
       <div class="card-title" id="chart-label" style="margin:0">이번 주 일별 잉여</div>
@@ -255,7 +283,9 @@ let BMR=1891,entries=[],view="weekly",inputTab="food";
 let calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
 const DAYS=["일","월","화","수","목","금","토"];
+const WDAY_LABELS=["월","화","수","목","금","토","일"]; // 월요일 시작
 const MONTHS=["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"];
+const WORKOUT_TYPES=["상체","하체","유산소","상체+유산소","하체+유산소"];
 
 function mifflin(h,w,a,s){return Math.round((10*w)+(6.25*h)-(5*a)+(s==="m"?5:-161));}
 
@@ -295,7 +325,6 @@ function today(){return new Date().toISOString().slice(0,10);}
 function nowTime(){return new Date().toTimeString().slice(0,5);}
 function getWeight(){return +document.getElementById("inp-weight").value||100;}
 
-// FIX 1: 요일 표시 — new Date(ds+"T00:00:00") 로컬 기준 파싱
 function formatDate(ds){
   const d=new Date(ds+"T00:00:00");
   return `${ds} (${DAYS[d.getDay()]})`;
@@ -305,12 +334,107 @@ function calFor(d){return entries.filter(e=>e.date===d&&e.type==="food").reduce(
 function exCalFor(d){return entries.filter(e=>e.date===d&&e.type==="exercise").reduce((s,e)=>s+e.exerciseCal,0);}
 function surFor(d){return calFor(d)-BMR-exCalFor(d);}
 
+// 운동 완료 여부: 해당 날짜에 exercise 타입 엔트리 존재
+function workoutDone(d){
+  return entries.some(e=>e.date===d&&e.type==="exercise");
+}
+
+// 운동한 날의 유형 텍스트 (첫 번째 exercise 엔트리 기준)
+function workoutType(d){
+  const e=entries.find(e=>e.date===d&&e.type==="exercise");
+  if(!e||!e.exercise) return "";
+  // "운동 완료 — 상체" 형태에서 유형만 추출
+  const m=e.exercise.match(/—\s*(.+)$/);
+  return m?m[1]:e.exercise;
+}
+
+// 연속 운동일 계산 (오늘 또는 가장 최근 운동일 기준으로 역산)
+function calcStreak(){
+  let streak=0;
+  const d=new Date(today()+"T00:00:00");
+  if(!workoutDone(d.toISOString().slice(0,10))) d.setDate(d.getDate()-1);
+  for(let i=0;i<365;i++){
+    const ds=d.toISOString().slice(0,10);
+    if(workoutDone(ds)){streak++;d.setDate(d.getDate()-1);}
+    else break;
+  }
+  return streak;
+}
+
 function weekDates(){
   const now=new Date(),dates=[];
   const mon=new Date(now);
   mon.setDate(now.getDate()-((now.getDay()+6)%7));
   for(let i=0;i<7;i++){const d=new Date(mon);d.setDate(mon.getDate()+i);dates.push(d.toISOString().slice(0,10));}
   return dates;
+}
+
+// ── 주간 운동 트래커 렌더 ──
+function renderWorkoutTracker(){
+  const t=today();
+  const wdates=weekDates();
+  const grid=document.getElementById("wt-grid");
+  const statsEl=document.getElementById("wt-stats");
+  const logRow=document.getElementById("wt-log-row");
+
+  // 요일 칩
+  grid.innerHTML="";
+  wdates.forEach((d,i)=>{
+    const done=workoutDone(d);
+    const isT=d===t;
+    const wtype=done?workoutType(d):"";
+    const div=document.createElement("div");
+    div.className="wt-day"+(done?" done":"")+(isT?" today":"");
+    div.innerHTML=`<span class="wt-icon">${done?"✅":"⬜"}</span><span class="wt-label">${WDAY_LABELS[i]}</span>${wtype?`<span class="wt-type">${wtype}</span>`:""}`;
+    grid.appendChild(div);
+  });
+
+  // 통계
+  const doneDays=wdates.filter(d=>workoutDone(d)).length;
+  const streak=calcStreak();
+  statsEl.innerHTML=`이번 주 <strong>${doneDays} / 7일</strong> 완료&nbsp;&nbsp;·&nbsp;&nbsp;연속 <strong>${streak}일</strong> 스트릭`;
+
+  // 오늘 운동 완료 버튼 or 완료 뱃지
+  const todayDone=workoutDone(t);
+  if(todayDone){
+    logRow.innerHTML=`<span class="wt-done-badge">✅ 오늘 운동 완료</span><button class="wt-undo-btn" onclick="undoWorkout()">취소</button>`;
+  } else {
+    const btns=WORKOUT_TYPES.map(tp=>`<button class="wt-type-btn" id="wt-btn-${tp.replace(/\+/g,'p')}" onclick="logWorkout('${tp}')">${tp}</button>`).join("");
+    logRow.innerHTML=`<span class="wt-log-label">오늘 운동 완료:</span>${btns}`;
+  }
+}
+
+async function logWorkout(type){
+  // 버튼 전체 비활성화
+  WORKOUT_TYPES.forEach(tp=>{
+    const btn=document.getElementById(`wt-btn-${tp.replace(/\+/g,'p')}`);
+    if(btn) btn.disabled=true;
+  });
+  setSyncStatus("loading","운동 기록 저장 중...");
+  try{
+    const res=await fetch(`${WORKER_URL}/entries`,{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        date:today(),time:nowTime(),
+        food:"",cal:0,bmr:BMR,
+        exercise:`운동 완료 — ${type}`,exerciseCal:0,memo:""
+      })
+    });
+    const data=await res.json();
+    if(data.error) throw new Error(data.error);
+    await loadEntries();
+  }catch(e){
+    setSyncStatus("error","저장 실패: "+e.message);
+    alert("저장 실패: "+e.message);
+  }
+}
+
+async function undoWorkout(){
+  const t=today();
+  const entry=entries.find(e=>e.date===t&&e.type==="exercise"&&e.exercise&&e.exercise.startsWith("운동 완료"));
+  if(!entry) return;
+  if(!confirm("오늘 운동 완료 기록을 취소할까요?")) return;
+  await deleteEntryById(entry.id);
 }
 
 function render(){
@@ -331,7 +455,6 @@ function render(){
   document.getElementById("m-tread").textContent=tt||"불필요";
   document.getElementById("m-tread").style.color=tt?"var(--red-text)":"var(--green-text)";
 
-  // 평균 (이번 주 기준)
   const wdates=weekDates();
   const wactive=wdates.filter(d=>calFor(d)>0||exCalFor(d)>0);
   const avg=wactive.length?Math.round(wactive.reduce((s,d)=>s+surFor(d),0)/wactive.length):0;
@@ -339,6 +462,8 @@ function render(){
   document.getElementById("m-avg").textContent=(avg>0?"+":"")+avg.toLocaleString();
   document.getElementById("m-avg").style.color=signal(avg).color;
   document.getElementById("chart-label").textContent=view==="weekly"?"이번 주 일별 잉여":"이번 달 달력";
+
+  renderWorkoutTracker();
 
   if(view==="weekly") renderWeekly(t,wt);
   else renderCalendar();
@@ -357,7 +482,6 @@ function renderWeekly(t,wt){
     const pct=Math.min(Math.abs(s)/maxAbs*100,100);
     const col=s>YELLOW?"var(--red-bar)":s>GREEN?"var(--yellow-bar)":"var(--green-bar)";
     const isT=d===t;
-    // FIX 1: 주간 바 요일 표시 — 로컬 파싱
     const dow=DAYS[new Date(d+"T00:00:00").getDay()];
     const row=document.createElement("div");
     row.className="bar-row";
@@ -368,22 +492,17 @@ function renderWeekly(t,wt){
   });
 }
 
-// FIX 3: 달력 뷰
 function renderCalendar(){
   const t=today();
   document.getElementById("cal-month-label").textContent=`${calYear}년 ${MONTHS[calMonth]}`;
   const grid=document.getElementById("cal-grid");
-  // 요일 헤더 7개 유지, 날짜 셀만 교체
   while(grid.children.length>7) grid.removeChild(grid.lastChild);
 
-  const firstDay=new Date(calYear,calMonth,1).getDay(); // 0=일
+  const firstDay=new Date(calYear,calMonth,1).getDay();
   const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
 
-  // 빈 셀
   for(let i=0;i<firstDay;i++){
-    const el=document.createElement("div");
-    el.className="cal-empty";
-    grid.appendChild(el);
+    const el=document.createElement("div");el.className="cal-empty";grid.appendChild(el);
   }
 
   for(let day=1;day<=daysInMonth;day++){
@@ -392,6 +511,7 @@ function renderCalendar(){
     const has=calFor(ds)>0||exCalFor(ds)>0;
     const isT=ds===t;
     const dow=new Date(ds+"T00:00:00").getDay();
+    const wdone=workoutDone(ds);
 
     const cell=document.createElement("div");
     cell.className="cal-cell"+(has?" has-data":"")+(isT?" is-today":"")+(dow===0?" sun":dow===6?" sat":"");
@@ -403,27 +523,19 @@ function renderCalendar(){
       tipText=(s>0?"+":"")+s.toLocaleString();
     }
 
-    cell.innerHTML=`<span class="cal-num">${day}</span>
+    cell.innerHTML=`<span class="cal-num">${day}${wdone?'<span style="font-size:8px;vertical-align:super">🏋</span>':''}</span>
       <span class="cal-dot" style="background:${dotColor}"></span>
       ${has?`<span class="cal-tip" style="color:${dotColor};font-size:9px">${tipText}</span>`:""}`;
 
     if(has){
-      cell.title=`${formatDate(ds)}\n섭취: ${calFor(ds).toLocaleString()} kcal\n운동 소모: ${exCalFor(ds).toLocaleString()} kcal\n잉여: ${tipText} kcal`;
+      cell.title=`${formatDate(ds)}\n섭취: ${calFor(ds).toLocaleString()} kcal\n운동 소모: ${exCalFor(ds).toLocaleString()} kcal\n잉여: ${tipText} kcal${wdone?"\n✅ 운동 완료":""}`;
     }
     grid.appendChild(cell);
   }
 }
 
-function calPrev(){
-  calMonth--;
-  if(calMonth<0){calMonth=11;calYear--;}
-  renderCalendar();
-}
-function calNext(){
-  calMonth++;
-  if(calMonth>11){calMonth=0;calYear++;}
-  renderCalendar();
-}
+function calPrev(){calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderCalendar();}
+function calNext(){calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCalendar();}
 
 function renderTable(wt){
   const tbody=document.getElementById("tbody");
@@ -473,7 +585,8 @@ async function loadEntries(){
     if(data.error) throw new Error(data.error);
     entries=(data.entries||[]).map(e=>({
       ...e,
-      type:e.food&&e.food.trim()?"food":e.exerciseCal>0?"exercise":"food"
+      // exercise 필드에 내용이 있으면 exercise 타입으로 우선 판별
+      type:(e.food&&e.food.trim())?"food":(e.exercise&&e.exercise.trim())?"exercise":e.exerciseCal>0?"exercise":"food"
     }));
     setSyncStatus("ok",`동기화 완료 · ${new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"})}`);
     render();
@@ -531,8 +644,7 @@ async function addExerciseEntry(){
   finally{btn.disabled=false;btn.textContent="+ 저장";}
 }
 
-async function deleteEntry(id){
-  if(!confirm("이 항목을 Notion에서 삭제할까요?")) return;
+async function deleteEntryById(id){
   setSyncStatus("loading","삭제 중...");
   try{
     const res=await fetch(`${WORKER_URL}/entries/delete`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id})});
@@ -542,12 +654,16 @@ async function deleteEntry(id){
   }catch(e){setSyncStatus("error","삭제 실패: "+e.message);}
 }
 
+async function deleteEntry(id){
+  if(!confirm("이 항목을 Notion에서 삭제할까요?")) return;
+  await deleteEntryById(id);
+}
+
 function setView(v){
   view=v;
   document.querySelectorAll(".tab").forEach((t,i)=>t.classList.toggle("active",i===(v==="weekly"?0:1)));
   document.getElementById("weekly-view").classList.toggle("hidden",v!=="weekly");
   document.getElementById("monthly-view").classList.toggle("hidden",v!=="monthly");
-  // 월간 전환 시 현재 달로 초기화
   if(v==="monthly"){calYear=new Date().getFullYear();calMonth=new Date().getMonth();}
   render();
 }
